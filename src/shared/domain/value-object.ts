@@ -7,8 +7,8 @@ import isEqual from "lodash/isEqual";
 export abstract class ValueObject {
   /**
    * Checks if the given value object is equal to this value object.
-   * @param {this} vo - The value object to compare.
-   * @returns {boolean} True if the given value object is equal to this value object, otherwise false.
+   * @param vo - The value object to compare.
+   * @returns True if the given value object is equal to this value object, otherwise false.
    */
   equals(vo: this): boolean {
     if (

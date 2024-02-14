@@ -1,10 +1,15 @@
+import { Entity } from "../../shared/domain/entity"
+import { EntityValidationError } from "../../shared/domain/validation-error"
+import { ValueObject } from "../../shared/domain/value-object"
 import { UUID } from "../../shared/domain/value-objects/uuid.vo"
 import { CategoryCreateCommand, CategoryProps } from "./category.types"
+import { CategoryValidatorFactory } from "./category.validator"
 
 /**
  * Represents a category.
+ * @extends Entity
  */
-export class Category {
+export class Category extends Entity {
   name: string
   created_at: Date
   category_id: UUID
@@ -13,9 +18,11 @@ export class Category {
 
   /**
    * Creates an instance of Category.
-   * @param {CategoryProps} props - The properties of the category.
+   * @param props - The properties of the category.
    */
   constructor(props: CategoryProps) {
+    super()
+
     this.category_id = props.category_id ?? new UUID();
     this.name = props.name;
     this.is_active = props.is_active ?? true;
@@ -24,28 +31,50 @@ export class Category {
   }
 
   /**
+  * Getter method for retrieving the entity ID as a ValueObject.
+  * @returns The entity ID represented as a ValueObject.
+  */
+  get entity_id(): ValueObject {
+    return this.category_id;
+  }
+
+  /**
    * Creates a category with the given properties.
-   * @param {CategoryCreateCommand} props - The properties to create the category.
-   * @returns {Category} The created category instance.
+   * @param props - The properties to create the category.
+   * @returns The created category instance.
    */
   static create(props: CategoryCreateCommand): Category {
-    return new Category(props);
+    const category = new Category(props);
+    Category.validate(category)
+    return category
+  }
+
+  /**
+  * Validates a category entity using the CategoryValidator.
+  * @param entity - The category entity to validate.
+  */
+  static validate(entity: Category): void{
+    const validator = CategoryValidatorFactory.create()
+    const isValid = validator.validate(entity)
+    if (!isValid) throw new EntityValidationError(validator.errors)
   }
 
   /**
    * Changes the name of the category.
-   * @param {string} name - The new name for the category.
+   * @param name - The new name for the category.
    */
   changeName(name: string): void {
     this.name = name;
+    Category.validate(this)
   }
 
   /**
    * Changes the description of the category.
-   * @param {string} description - The new description for the category.
+   * @param description - The new description for the category.
    */
   changeDescription(description: string): void {
     this.description = description;
+    Category.validate(this)
   }
 
   /**
@@ -64,7 +93,7 @@ export class Category {
 
   /**
    * Returns the category data as a JSON object.
-   * @returns {Object} The category data as a JSON object.
+   * @returns The category data as a JSON object.
    */
   toJSON(): Object {
     return {
